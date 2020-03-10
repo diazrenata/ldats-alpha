@@ -1,0 +1,55 @@
+---
+title: "LDATS alpha testing - LDA section"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::install_github("weecology/LDATS@juniper_working")
+library(LDATS)
+
+```
+
+## Load one of our toy datasets
+
+```{r load a dataset}
+
+dat <- read.csv(here::here("data", "static.csv"), stringsAsFactors = F)
+
+ldats_dat <- list(
+  document_term_table = dat,
+  document_covariate_table = data.frame(
+    year = 1:30
+  ),
+  metadata = list(timename = "year")
+)
+```
+
+
+## Explore LDATS conform
+
+```{r conform}
+
+LDATS:::conform_data(data = ldats_dat)
+
+```
+
+This fails, I suspect because of the `metadata` argument?
+
+```{r no meta}
+
+ldats_dat <- list(
+  document_term_table = dat,
+  document_covariate_table = data.frame(
+    year = 1:30
+  )
+)
+
+LDATS:::conform_data(ldats_dat)
+
+LDATS:::conform_data(data = dat)
+
+LDATS:::conform_data(data = list(document_term_table = dat))
+
+
+```
