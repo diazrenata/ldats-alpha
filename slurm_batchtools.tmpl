@@ -1,0 +1,43 @@
+#!/bin/bash
+# From https://github.com/mllg/batchtools/blob/master/inst/templates/
+
+<%
+# relative paths are not handled well by Slurm
+log.file = fs::path_expand(log.file)
+
+if (!"ncpus" %in% names(resources)) {
+  resources$ncpus = 1
+}
+if (!"walltime" %in% names(resources)) {
+  resources$walltime<-"4:00:00"
+}
+if (!"memory" %in% names(resources)) {
+  resources$memory <- "8GB"
+}
+
+-%>
+
+  # Job name and who to send updates to
+  #SBATCH --mail-user=diaz.renata@ufl.edu
+  #SBATCH --mail-type=FAIL
+  #SBATCH --account=ewhite
+  #SBATCH --partition=hpg2-compute
+  #SBATCH --qos=ewhite-b   # Remove the `-b` if the script will take more than 4 days; see "bursting" below
+
+
+#SBATCH --job-name=<%= "ld-make" %>
+#SBATCH --output=<%= log.file %>
+#SBATCH --error=<%= log.file %>
+#SBATCH --ntasks=1
+
+#SBATCH --time=<%= 960 %>
+#SBATCH --cpus-per-task=<%= 1 %>
+#SBATCH --mem-per-cpu=<%= "8GB" %>
+
+## Initialize work environment like
+## source /etc/profile
+source /etc/profile
+
+# module load R # Uncomment if R is an environment module.
+module load R
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
