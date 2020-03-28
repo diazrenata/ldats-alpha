@@ -29,7 +29,7 @@ lda_plan <- drake_plan(
 pipeline <- dplyr::bind_rows(dat_plan, lda_plan)
 
 ## Set up the cache and config
-db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache-MATSS.sqlite"))
 cache <- storr::storr_dbi("datatable", "keystable", db)
 
 
@@ -52,12 +52,12 @@ if(grepl("ufhpc", nodename)) {
   make(pipeline,
        force = TRUE,
        cache = cache,
-       cache_log_file = here::here("drake", "cache_log.txt"),
+       cache_log_file = here::here("drake", "cache_log_MATSS.txt"),
        verbose = 2,
        parallelism = "future",
        jobs = 128,
        caching = "master") # Important for DBI caches!
 } else {
   # Run the pipeline on a single local core
-  system.time(make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt")))
+  system.time(make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log_MATSS.txt")))
 }

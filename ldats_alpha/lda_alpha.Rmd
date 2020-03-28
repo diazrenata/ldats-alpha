@@ -5,7 +5,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-devtools::install_github("weecology/LDATS@juniper_working")
+#devtools::install_github("weecology/LDATS@juniper_working")
 library(LDATS)
 
 ```
@@ -30,14 +30,6 @@ ldats_dat <- list(
 
 ```{r conform}
 
-LDATS:::conform_data(data = ldats_dat)
-
-```
-
-This fails, I suspect because of the `metadata` argument?
-
-```{r no meta}
-
 ldats_dat <- list(
   document_term_table = dat,
   document_covariate_table = data.frame(
@@ -45,11 +37,6 @@ ldats_dat <- list(
   )
 )
 
-LDATS:::conform_data(ldats_dat)
-
-LDATS:::conform_data(data = dat)
-
-LDATS:::conform_data(data = list(document_term_table = dat))
-
+LDATS:::conform_data(data = ldats_dat, control = LDATS:::LDA_control())
 
 ```
