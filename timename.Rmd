@@ -1,3 +1,13 @@
+---
+title: "Timename"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r run, echo = T}
 library(MATSS)
 library(LDATS)
 source(here::here("fxns", "fxns.R"))
@@ -13,9 +23,24 @@ head(cdat[[1]]$train$document_covariate_table)
 head(cdat[[1]]$train$document_term_table)
 
 lda_cdat <- LDA(cdat, topics = c(2:3))
+```
 
+The following fail:
+
+```{r these fail, eval = F}
 ts_cdat <- TS(lda_cdat, formulas = ~1, nchangepoints = 0, timename = "timestep")
+
+# Error in check_timename(LDAs = LDAs, timename = timename) : 
+#  timename not present in document covariate table
 
 ts_cdat <- TS(lda_cdat, formulas = ~1, nchangepoints = 0, timename = "time")
 
+# Error in check_timename(LDAs = LDAs, timename = timename) : 
+#  timename not present in document covariate table
+
 ts_cdat <- TS(lda_cdat, formulas = ~1, nchangepoints = 0, timename = "")
+
+# Error in check_timename(LDAs = LDAs, timename = timename) : 
+#  timename not present in document covariate table
+
+```
