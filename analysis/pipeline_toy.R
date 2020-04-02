@@ -15,13 +15,13 @@ pipeline <- drake_plan(
   lda = target(LDATS::LDA(data = conf,topics = 2:5, replicates = 2),
                                 transform = map(conf)),
   classic =  target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = c(0, 1), control = TS_control(response = multinom_TS), timename = "timestep"),
-                    transform = map(lda))#,
-  # alr = target(new_TS(lda = lda, response = "alr"),
-  #              transform = map(lda)),
-  # ilr = target(new_TS(lda = lda, response = "ilr"),
-  #              transform = map(lda)),
-  # clr = target(new_TS(lda = lda, response = "clr"),
-  #              transform = map(lda))
+                    transform = map(lda)),
+  alr = target(new_TS(lda = lda, response = "alr"),
+               transform = map(lda)),
+  ilr = target(new_TS(lda = lda, response = "ilr"),
+               transform = map(lda)),
+  clr = target(new_TS(lda = lda, response = "clr"),
+               transform = map(lda))
 )
 
 
