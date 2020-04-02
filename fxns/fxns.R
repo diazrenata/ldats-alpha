@@ -14,5 +14,4 @@ load_toy_data <- function(toy_path) {
   return(toy_data)
   
 }
-
   

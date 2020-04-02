@@ -2,8 +2,10 @@ library(drake)
 library(MATSS)
 library(LDATS)
 source(here::here("fxns", "fxns.R"))
+source(here::here("fxns", "ldats_wrapper.R"))
 
-remotes::install_github("weecology/LDATS@master")
+
+#remotes::install_github("weecology/LDATS@master")
 
 
 toy_names <- list.files(here::here("data")) 
@@ -12,18 +14,8 @@ toy_names <- unlist(strsplit(toy_names, split = ".csv"))
 pipeline <- drake_plan(
   dat = target(load_toy_data(toy_path = toy_name),
                transform = map(toy_name = !!toy_names)),
-  conf = target(conform_data(data = dat, control = LDA_control()),
-             transform = map(dat)),
-  lda = target(LDATS::LDA(data = conf,topics = 2:5, replicates = 2),
-                                transform = map(conf)),
-  classic =  target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = c(0, 1), control = TS_control(response = multinom_TS), timename = "timestep"),
-                    transform = map(lda))#,
-  # alr = target(new_TS(lda = lda, response = "alr"),
-  #              transform = map(lda)),
-  # ilr = target(new_TS(lda = lda, response = "ilr"),
-  #              transform = map(lda)),
-  # clr = target(new_TS(lda = lda, response = "clr"),
-  #              transform = map(lda))
+  models = target(ldats_wrapper(data_list = dat, nseed = 2, ntopics = c(2:5), ncpts = c(0,1), formulas = "intercept"),
+                  transform = map(dat))
 )
 
 
@@ -50,7 +42,7 @@ pipeline <- drake_plan(
 
 
 ## Set up the cache and config
-db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache-toy.sqlite"))
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache-toy-old.sqlite"))
 cache <- storr::storr_dbi("datatable", "keystable", db)
 
 
@@ -73,12 +65,12 @@ if(grepl("ufhpc", nodename)) {
   make(pipeline,
        force = TRUE,
        cache = cache,
-       cache_log_file = here::here("drake", "cache_log_toy.txt"),
+       cache_log_file = here::here("drake", "cache_log_toy_old.txt"),
        verbose = 2,
        parallelism = "future",
-       jobs = 128,
+       jobs = 4,
        caching = "master") # Important for DBI caches!
 } else {
   # Run the pipeline on a single local core
-  system.time(make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log_toy.txt")))
+  system.time(make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log_toy_old.txt")))
 }
