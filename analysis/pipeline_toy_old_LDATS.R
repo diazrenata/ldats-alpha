@@ -3,6 +3,8 @@ library(MATSS)
 library(LDATS)
 source(here::here("fxns", "fxns.R"))
 
+remotes::install_github("weecology/LDATS@master")
+
 
 toy_names <- list.files(here::here("data")) 
 toy_names <- unlist(strsplit(toy_names, split = ".csv"))
