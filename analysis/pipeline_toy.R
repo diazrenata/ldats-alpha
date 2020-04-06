@@ -25,37 +25,14 @@ pipeline <- drake_plan(
                                               response_args = list(control = simplex_TS_control(transformation = rlang::expr(alr)))), 
                          timename = "timestep"),
                transform = map(lda)),
-  simplex_clr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1, 
+  simplex_ilr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1, 
                          control = TS_control(response = simplex_TS,
                                               method_args = list(control = ldats_classic_control(nit = 100)),
-                                              response_args = list(control = simplex_TS_control(transformation = rlang::expr(clr)))), 
+                                              response_args = list(control = simplex_TS_control(transformation = rlang::expr(ilr)))), 
                          timename = "timestep"),
-               transform = map(lda))#,
-  # ilr = target(new_TS(lda = lda, response = "ilr"),
-  #              transform = map(lda)),
-  # clr = target(new_TS(lda = lda, response = "clr"),
-  #              transform = map(lda))
+               transform = map(lda))
 )
 
-#   
-# lda_plan <- drake_plan(
-#   t = target(reformat_matss_data(matss_data = dat),
-#                 transform = map(dat = !!dat_targets)),
-#   c = target(conform_data(data = t, control = LDA_control()),
-#              transform = map(t)),
-#   plain = target(LDATS::LDA(data = c,topics = 2:3, replicates = 2),
-#                  transform = map(c)),
-#   one = target(LDATS::LDA(data = c,topics = 1:2, replicates = 2),
-#                  transform = map(c)),
-#   gibbs = target(LDATS::LDA(data = c,topics = 2:3, replicates = 2, control = LDA_control(model_args = list(method = "Gibbs"))),
-#                  transform = map(c)),
-#   all_plain = target(list(plain),
-#                      transform = combine(plain)),
-#   all_one = target(list(one),
-#                    transform = combine(one)),
-#   all_gibbs = target(list(gibbs),
-#                      transform = combine(gibbs))
-# )
 
 
 ## Set up the cache and config
