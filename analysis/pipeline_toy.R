@@ -5,7 +5,7 @@ source(here::here("fxns", "fxns.R"))
 
 
 toy_names <- list.files(here::here("data")) 
-toy_names <- unlist(strsplit(toy_names, split = ".csv"))
+toy_names <- unlist(strsplit(toy_names, split = ".csv"))#[c(1:2, 4:5)]
 
 pipeline <- drake_plan(
   dat = target(load_toy_data(toy_path = toy_name),
@@ -16,7 +16,7 @@ pipeline <- drake_plan(
                transform = map(conf)),
   classic =  target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1, 
                               control = list(response = multinom_TS,
-                                                   method_args = list(control = ldats_classic_control(nit = 1000))), 
+                                                   method_args = list(control = ldats_classic_control(nit = 100))), 
                               timename = "timestep"),
                     transform = map(lda)),
   simplex_alr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1,
@@ -24,13 +24,19 @@ pipeline <- drake_plan(
                                               method_args = list(control = ldats_classic_control(nit = 100)),
                                               response_args = list(control = simplex_TS_control(transformation = rlang::expr(alr)))),
                          timename = "timestep"),
-               transform = map(lda))#,
-  # simplex_ilr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1, 
-  #                        control = list(response = simplex_TS,
-  #                                             method_args = list(control = ldats_classic_control(nit = 100)),
-  #                                             response_args = list(control = simplex_TS_control(transformation = rlang::expr(ilr)))), 
-  #                        timename = "timestep"),
-  #              transform = map(lda))
+               transform = map(lda)),
+  simplex_ilr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1,
+                         control = list(response = simplex_TS,
+                                              method_args = list(control = ldats_classic_control(nit = 100)),
+                                              response_args = list(control = simplex_TS_control(transformation = rlang::expr(ilr)))),
+                         timename = "timestep"),
+               transform = map(lda)),
+  simplex_clr = target(LDATS::TS(LDAs = lda, formulas = ~1, nchangepoints = 0:1,
+                                 control = list(response = simplex_TS,
+                                                method_args = list(control = ldats_classic_control(nit = 100)),
+                                                response_args = list(control = simplex_TS_control(transformation = rlang::expr(clr)))),
+                                 timename = "timestep"),
+                       transform = map(lda))
 )
 
 

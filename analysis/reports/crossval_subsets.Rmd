@@ -1,0 +1,108 @@
+---
+title: "Exploring subsetting functions"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r get setup, echo = T}
+library(MATSS)
+library(LDATS)
+source(here::here("fxns", "fxns.R"))
+
+dat <- load_toy_data("directional")
+names(dat)
+head(dat$document_covariate_table)
+head(dat$document_term_table)
+
+cdat <- conform_data(dat, control = LDA_TS_control())
+names(cdat[[1]]$train)
+head(cdat[[1]]$train$document_covariate_table)
+head(cdat[[1]]$train$document_term_table)
+
+```
+
+Playing with `conform_data` to generate subsets...
+
+
+#### Systematic leave one out
+```{r systematic playing}
+
+dat_systematic_loo <- conform_data(dat, control = list(nsubsets = 30, rule = systematic_loo))
+
+names(dat_systematic_loo)
+
+str(dat_systematic_loo[[1]])
+
+dat_systematic_loo <- conform_data(dat, control = list(nsubsets = 10, rule = systematic_loo))
+
+names(dat_systematic_loo)
+
+str(dat_systematic_loo[[10]])
+
+```
+
+Systematically removing each year works. If you have nsubsets < ntimesteps, you get the first nsubsets timesteps removed.
+
+#### Random LOO
+```{r random loo}
+
+dat_random_loo <- conform_data(dat, control = list(nsubsets = 30, rule = random_loo))
+
+names(dat_random_loo)
+
+str(dat_random_loo[[1]])
+
+dat_random_loo <- conform_data(dat, control = list(nsubsets = 10, rule = random_loo))
+
+names(dat_random_loo)
+
+str(dat_random_loo[[10]])
+
+
+```
+
+#### Leave p out
+
+```{r leave p out, echo = T, eval = F}
+
+dat_p <- conform_data(dat, control = list(nsubsets = 30, rule = leave_p_out))
+
+
+```
+
+The above fails:
+
+```{r error message, eval = F}
+# Error in (function (data, p = 1, pre = 0, post = 0, random = TRUE, locations = NULL)  : unused argument (iteration = 1)
+```
+
+I don't see how to pass the relevant arguments to `leave_p_out` via `conform_data`. It looks like the args that get passed to whatever the `rule` function is get specified at line 126 of `data_preparation.R` in LDATS, and are currently fixed (see chunk below). I think the ```unused argument (iteration = 1)``` message is because `conform_data` is set up to run whatever `rule` is with the following:
+
+```{r cdat, eval = F}
+        args <- list(data = dtt, iteration = i)
+        test_train <- do.call(what = rule, args = args)
+```
+
+which works if `rule` is `systematic_loo` or `random_loo` because those use `iteration`, but doesn't work if `rule` is `leave_p_out`. 
+
+So maybe this points to a control list (within a list within a list.........it works!!) to feed the appropriate arguments to rule? 
+
+```{r r rule args, eval = F}
+
+dat_p <- conform_data(dat, control = list(nsubsets = 30, rule = leave_p_out, rule_args = list(p = 1, pre = 1, post = 1, random = T)))
+
+```
+
+Or the option to supply a function with arguments specified as `rule`: 
+
+```{r rule, eval = F}
+dat_p <- conform_data(dat, control = list(nsubsets = 30, rule = leave_p_out(p = 1, pre = 1, post = 1, random = T)))
+
+
+# Fails with
+# Error in NROW(data) : argument "data" is missing, with no default
+
+```
